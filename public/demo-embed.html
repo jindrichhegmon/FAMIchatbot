@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="cs">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="data:,">
+  <title>Ukázka vložení widgetu Fami na cizí stránku</title>
+  <style>
+    body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; color: #1c2333; background: #fff; }
+    .hero { background: linear-gradient(135deg, #1e3a8a, #2b5bd7); color: #fff; padding: 64px 24px; }
+    .hero h1 { margin: 0 0 8px; font-size: 34px; } .hero p { max-width: 640px; opacity: .9; font-size: 17px; }
+    main { max-width: 880px; margin: 0 auto; padding: 32px 24px; line-height: 1.6; }
+    code { background: #f1f5f9; padding: 2px 6px; border-radius: 4px; font-size: 13px; }
+    pre { background: #0f172a; color: #e2e8f0; padding: 14px; border-radius: 10px; overflow: auto; font-size: 13px; }
+    button.cta { background: #2b5bd7; color: #fff; border: 0; padding: 12px 18px; border-radius: 10px; font-size: 15px; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <div class="hero">
+    <h1>FamiCura – simulace stránky www.famicura.cz</h1>
+    <p>Tato stránka jen ukazuje, jak vypadá plovoucí widget Fami vložený na běžný web. Vpravo dole je bublina asistentky.</p>
+  </div>
+  <main>
+    <h2>Jak widget vložit na famicura.cz</h2>
+    <p>Do šablony webu (před <code>&lt;/body&gt;</code>) stačí jeden řádek:</p>
+    <pre>&lt;script src="https://SERVER/widget.js" data-api-base="https://SERVER" defer&gt;&lt;/script&gt;</pre>
+    <p>Volitelně: <code>data-color="#2b5bd7"</code>, <code>data-title="Fami"</code>, <code>data-open="true"</code>, <code>data-voice="false"</code>.</p>
+    <p>Stránka může asistentku ovládat z JavaScriptu: <code>Fami.open()</code>, <code>Fami.send('Bolí mě koleno')</code>, a poslouchat doporučení
+      přes <code>window.addEventListener('fami:recommendation', e =&gt; console.log(e.detail))</code> – například pro přesměrování do vlastního vyhledávání poskytovatelů.</p>
+    <p><button class="cta" onclick="Fami.send('Tatínek se vrátil z nemocnice a potřebujeme zajistit péči doma')">Vyzkoušet: „návrat z nemocnice“</button></p>
+    <p id="ev" style="color:#475569;font-size:14px"></p>
+  </main>
+  <script>
+    window.addEventListener('fami:recommendation', (e) => {
+      document.getElementById('ev').textContent = 'Událost fami:recommendation: ' + e.detail.services.map((s) => s.code).join(', ') + (e.detail.region ? ' / ' + e.detail.region.name : ' / bez okresu');
+    });
+  </script>
+  <script src="/widget.js" data-color="#2b5bd7" defer></script>
+</body>
+</html>

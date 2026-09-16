@@ -1,0 +1,7 @@
+# Caddy – HTTPS reverse proxy (např. fami.famicura.net → localhost:3010)
+fami.famicura.net {
+    reverse_proxy localhost:3010 {
+        flush_interval -1   # SSE streaming bez bufferování
+    }
+    encode zstd gzip
+}

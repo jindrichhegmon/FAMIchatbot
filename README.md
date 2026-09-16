@@ -19,7 +19,7 @@ stávající asistentku Fami (v62, prompt 3.6) vlastním kódem, který máte pl
   Server zvaliduje kódy služeb a okres, doplní názvy a URL, a widgetu pošle událost `recommendation` –
   ta se vykreslí jako **karta „Doporučené služby“** s tlačítky *Najít poskytovatele*. Kódy se nikdy neukazují klientovi.
 - **Streaming** odpovědí (SSE), historie konverzace na serveru (session), obnova chatu po reloadu stránky.
-- **Prompt caching** – dlouhý systémový prompt (~12 000 tokenů) se cachuje, výrazně levnější a rychlejší provoz.
+- **Prompt caching** – dlouhý systémový prompt (~27 000 tokenů) se cachuje, výrazně levnější a rychlejší provoz.
 - **Bezpečnost**: CORS allowlist, rate limit na IP, limit délky zprávy, API klíč jen na serveru.
 - **Logování konverzací** do `logs/conversations-YYYY-MM-DD.jsonl` (dotaz, odpověď, doporučení, doba odezvy).
 - **Mock režim** pro vývoj bez API klíče (`MOCK=1`).
@@ -122,7 +122,7 @@ by se mohly useknout; pokud se to bude dít, řešením je VPS varianta výše n
 ## Provoz a náklady
 
 - Model `claude-sonnet-5` (nastavitelné `ANTHROPIC_MODEL`). Systémový prompt se cachuje (`cache_control: ephemeral`),
-  takže po prvním dotazu v 5minutovém okně platíte za ~12 tis. tokenů promptu jen zlomek ceny.
+  takže po prvním dotazu v 5minutovém okně platíte za ~27 tis. tokenů promptu jen zlomek ceny.
 - Sessions: na Netlify v Blobs (přežijí volání i deploy), u Express serveru v paměti (1 instance; při restartu se
   kontext modelu ztratí, widget si zobrazenou historii drží v sessionStorage). Jiné úložiště = další adaptér v `src/session-store.js`.
 - Rate limit podle IP funguje jen u Express varianty (na Netlify je každé volání zvlášť).

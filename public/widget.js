@@ -52,7 +52,7 @@
 
   // ---------- Styly ----------
   const css = `
-  :host{all:initial}
+  :host{all:initial;display:block}
   *{box-sizing:border-box;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
   .fab{position:fixed;right:20px;bottom:20px;width:60px;height:60px;border-radius:50%;background:var(--c);color:#fff;border:0;
     box-shadow:0 8px 24px rgba(0,0,0,.25);cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:2147483000;transition:transform .15s}
@@ -109,12 +109,14 @@
   // ---------- DOM ----------
   const host = document.createElement('div');
   host.id = 'fami-widget';
+  if (cfg.mode === 'inline') host.style.cssText = 'display:block;height:100%;min-height:420px';
   const root = host.attachShadow({ mode: 'open' });
   const style = document.createElement('style');
   style.textContent = css;
   root.appendChild(style);
   const wrap = document.createElement('div');
   wrap.style.setProperty('--c', cfg.color);
+  if (cfg.mode === 'inline') wrap.style.height = '100%';
   root.appendChild(wrap);
 
   const inline = cfg.mode === 'inline';

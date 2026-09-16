@@ -40,7 +40,7 @@ export const config = {
   apiKey: process.env.ANTHROPIC_API_KEY || '',
   model: process.env.ANTHROPIC_MODEL || 'claude-sonnet-5',
   maxTokens: num(process.env.MAX_TOKENS, 1024),
-  temperature: num(process.env.TEMPERATURE, 0.4),
+  temperature: process.env.TEMPERATURE === undefined || process.env.TEMPERATURE === '' ? null : Number(process.env.TEMPERATURE),
   // Kam odkazovat z karty doporučených služeb. Placeholdery: {serviceCode}, {regionId}, {regionName}
   providerUrl: process.env.FAMICURA_PROVIDER_URL || 'https://famicura.cz/?service={serviceCode}&region={regionId}',
   homeUrl: process.env.FAMICURA_HOME_URL || 'https://www.famicura.cz',

@@ -35,7 +35,8 @@ export async function runTurn(session, userText, emit) {
     const stream = anthropic.messages.stream({
       model: config.model,
       max_tokens: config.maxTokens,
-      temperature: config.temperature,
+      // temperature je u novějších modelů (Sonnet 5+) zrušená – posílá se jen když je výslovně nastavená v env TEMPERATURE
+      ...(config.temperature != null ? { temperature: config.temperature } : {}),
       system: getSystemBlocks(),
       tools,
       messages: session.messages,

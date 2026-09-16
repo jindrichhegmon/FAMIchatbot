@@ -26,7 +26,7 @@ await ta.press('Enter');
 await page.waitForFunction(() => document.querySelector('#fami-widget').shadowRoot.querySelectorAll('.card').length >= 2);
 await page.waitForFunction(() => !document.querySelector('#fami-widget').shadowRoot.querySelector('[data-a=send]').disabled, null, { timeout: 20000 });
 await page.waitForTimeout(300);
-const cards = await page.evaluate(() => [...document.querySelector('#fami-widget').shadowRoot.querySelectorAll('.card')].map((c) => ({ region: c.querySelector('.rg').textContent, links: c.querySelectorAll('a[href*="service="]').length })));
+const cards = await page.evaluate(() => [...document.querySelector('#fami-widget').shadowRoot.querySelectorAll('.card')].map((c) => ({ region: c.querySelector('.rg').textContent, providers: c.querySelectorAll('.prov .p').length, requests: c.querySelectorAll('a.rq[href*="anon-new-client"]').length })));
 console.log('cards:', JSON.stringify(cards));
 await page.screenshot({ path: OUT + '/fami-inline.png', fullPage: false });
 

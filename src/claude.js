@@ -58,7 +58,7 @@ export async function runTurn(session, userText, emit) {
 
     const results = [];
     for (const tu of toolUses) {
-      const { forClient, forModel } = runTool(tu.name, tu.input);
+      const { forClient, forModel } = await runTool(tu.name, tu.input);
       if (forClient) {
         session.lastRecommendation = forClient;
         emit('recommendation', forClient);

@@ -44,6 +44,13 @@ export const config = {
   // Kam odkazovat z karty doporučených služeb. Placeholdery: {serviceCode}, {regionId}, {regionName}
   providerUrl: process.env.FAMICURA_PROVIDER_URL || 'https://famicura.cz/?service={serviceCode}&region={regionId}',
   homeUrl: process.env.FAMICURA_HOME_URL || 'https://www.famicura.cz',
+  // Žádost o péči u konkrétní služby poskytovatele na famicura.cz. Placeholder: {facilityServiceId}
+  requestUrl: process.env.FAMICURA_REQUEST_URL || 'https://famicura.cz/anon-new-client/services/{facilityServiceId}/new-client',
+  // Aplikace fami-poskytovatele na jhn-apps (VPS s přístupem do Postgres Famicura). Prázdné = poskytovatelé se nenačítají.
+  providersUrl: process.env.FAMI_PROVIDERS_URL || '',
+  providersToken: process.env.FAMI_PROVIDERS_TOKEN || '',
+  providersPerService: num(process.env.FAMI_PROVIDERS_PER_SERVICE, 5),
+  providersTimeoutMs: num(process.env.FAMI_PROVIDERS_TIMEOUT_MS, 6000),
   // Povolené originy pro CORS (čárkou oddělené). Prázdné = jen same-origin.
   allowedOrigins: (process.env.ALLOWED_ORIGINS || '').split(',').map((s) => s.trim()).filter(Boolean),
   sessionTtlMin: num(process.env.SESSION_TTL_MIN, 60),

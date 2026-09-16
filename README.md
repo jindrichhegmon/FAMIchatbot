@@ -18,6 +18,10 @@ stávající asistentku Fami (v62, prompt 3.6) vlastním kódem, který máte pl
 - **Function call `recommended-services`**: model ho volá podle promptu (i bez okresu, po doplnění okresu znovu).
   Server zvaliduje kódy služeb a okres, doplní názvy a URL, a widgetu pošle událost `recommendation` –
   ta se vykreslí jako **karta „Doporučené služby“** s tlačítky *Najít poskytovatele*. Kódy se nikdy neukazují klientovi.
+- **Konkrétní poskytovatelé z databáze FamiCura**: jakmile je znám okres, backend dohledá v Postgres `famicura_core`
+  (přes aplikaci `fami-poskytovatele` na jhn-apps – VPS s přístupem do DB, stejný princip jako WEB-PeceDoma) poskytovatele
+  pro každou doporučenou službu: sponzorovaní a ověření první, max. 5 na službu, s tlačítkem **Žádost o péči**
+  (`famicura.cz/anon-new-client/services/{id}/new-client`). Asistentka smí jmenovat jen ty, které nástroj vrátil.
 - **Streaming** odpovědí (SSE), historie konverzace na serveru (session), obnova chatu po reloadu stránky.
 - **Prompt caching** – dlouhý systémový prompt (~27 000 tokenů) se cachuje, výrazně levnější a rychlejší provoz.
 - **Bezpečnost**: CORS allowlist, rate limit na IP, limit délky zprávy, API klíč jen na serveru.
@@ -36,6 +40,8 @@ src/session-store.js      úložiště sessions: paměť (Express) nebo Netlify 
 src/handlers.js           logika API společná pro Express i Netlify Function
 netlify/functions/api.mjs Netlify Function – celé API pod /api/* (streaming)
 netlify.toml              konfigurace Netlify (publish public/, funkce, included_files)
+src/providers.js          dohledání poskytovatelů přes jhn-apps (fami-poskytovatele) + mock
+jhn-apps/apps/fami-poskytovatele.js  aplikace pro jhn-apps (VPS): pevný SQL dotaz do Postgres Famicura
 src/mock.js               simulace odpovědí bez API
 prompt/system-prompt.md   SYSTÉMOVÝ PROMPT (upravujte zde; {{OKRESY}} se doplní z configu)
 config/services.json      kódy služeb (ID01…ID20), názvy, krátké popisy
@@ -119,6 +125,20 @@ sessions jsou v Netlify Blobs (store `fami-sessions`, TTL `SESSION_TTL_MIN`). Pr
 (Netlify → Logs → Functions), ne v souboru. Limit synchronní funkce je 10 s (na žádost u Netlify 26 s) – delší odpovědi
 by se mohly useknout; pokud se to bude dít, řešením je VPS varianta výše nebo snížení `MAX_TOKENS`.
 
+## Poskytovatelé z databáze (jhn-apps)
+
+```
+chatbot (Netlify)  --POST x-app-token-->  https://95-216-201-2.sslip.io/api/apps/fami-poskytovatele  --SQL-->  Postgres famicura_core
+```
+
+Nasazení aplikace na VPS (z Macu): `scp jhn-apps/apps/fami-poskytovatele.js root@95.216.201.2:/opt/jhn-apps/apps/`, do
+`/opt/jhn-apps/.env` přidat `FAMI_CHATBOT_TOKEN=<náhodný token>`, `chown jhnapps:jhnapps`, `gen-apps-index.js`, `pm2 restart jhn-apps`.
+V chatbotu: `FAMI_PROVIDERS_URL` (URL aplikace), `FAMI_PROVIDERS_TOKEN` (stejný token), volitelně `FAMI_PROVIDERS_PER_SERVICE` (5),
+`FAMI_PROVIDERS_TIMEOUT_MS` (6000), `FAMICURA_REQUEST_URL` (šablona žádosti o péči). Bez `FAMI_PROVIDERS_URL` se poskytovatelé
+nedohledávají a karta odkazuje jen na famicura.cz. Dotaz: `facility_services` (Active) → `service_types` → `service_categories.code`
+(ID01…), `facility_service_region` (okres) nebo `covers_whole_country`, seskupeno po `providers`; vyřazeni poskytovatelé se
+jménem obsahujícím „demo“.
+
 ## Provoz a náklady
 
 - Model `claude-sonnet-5` (nastavitelné `ANTHROPIC_MODEL`). Systémový prompt se cachuje (`cache_control: ephemeral`),
@@ -130,9 +150,8 @@ by se mohly useknout; pokud se to bude dít, řešením je VPS varianta výše n
 
 ## Předpoklady a rozhodnutí (k ověření)
 
-1. **URL poskytovatelů** – famicura.cz zatím nemá veřejnou URL s parametry pro vyhledání podle služby a okresu;
-   šablona `FAMICURA_PROVIDER_URL` je odhad. Buď doplní Matouš Němec (query parametry v SPA), nebo web zpracuje
-   událost `fami:recommendation` sám a karta v widgetu poslouží jen jako přehled.
+1. **URL poskytovatelů** – konkrétní poskytovatelé se načítají z databáze (viz výše) a vedou na skutečnou žádost o péči.
+   Obecné tlačítko „Najít poskytovatele“ (`FAMICURA_PROVIDER_URL`, odhad URL) se zobrazí jen když se poskytovatelé nenačtou.
 2. **Kódy služeb ve function callu** – schéma nástroje má `services: [ID01…ID20]` a `region {id, name}` (jako původní
    capability). Příspěvek na péči a dlouhodobé ošetřovné kód nemají (dávky, ne poskytovatelé) – model je uvádí jen v textu.
 3. **Kontrola verze** – původní prompt odpovídal „verze tři tečka pět“, ačkoli jde o 3.6; opraveno na „tři tečka šest“.

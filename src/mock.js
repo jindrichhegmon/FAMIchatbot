@@ -32,7 +32,7 @@ export async function mockTurn(session, userText, emit) {
     await say('verze tři tečka šest');
   } else if (/kloub|koleno|kyčel|rameno|záda|artróz/.test(t)) {
     const region = findOkres(t);
-    const { forClient } = runTool('recommended-services', { services: ['ID12'], region: region ? { id: region.id, name: region.name } : undefined });
+    const { forClient } = await runTool('recommended-services', { services: ['ID12'], region: region ? { id: region.id, name: region.name } : undefined });
     session.lastRecommendation = forClient;
     emit('recommendation', forClient);
     await say('Na bolest kloubů je vhodná ambulantní léčba – regenerativní medicína. Zobrazuji vám poskytovatele, ze kterých si můžete vybrat. Doporučuji kliniku Joint Care – specializuje se na cílenou léčbu kloubů pod ultrazvukovou navigací a působí v Praze a ve Zlíně. ');
@@ -40,7 +40,7 @@ export async function mockTurn(session, userText, emit) {
   } else if (findOkres(t) && session.lastRecommendation) {
     const region = findOkres(t);
     const codes = session.lastRecommendation.services.map((s) => s.code);
-    const { forClient } = runTool('recommended-services', { services: codes, region: { id: region.id, name: region.name } });
+    const { forClient } = await runTool('recommended-services', { services: codes, region: { id: region.id, name: region.name } });
     session.lastRecommendation = forClient;
     emit('recommendation', forClient);
     await say(`${region.name}, ${forClient.services.map((s) => s.name.toLowerCase()).join(', ')}.\n\nV okrese ${region.name} doporučuji oslovit poskytovatele těchto služeb:\n\n`);
@@ -48,7 +48,7 @@ export async function mockTurn(session, userText, emit) {
     await say('\nJak postupovat:\n\nZa prvé – na stránce www.famicura.cz si vyberte poskytovatele.\nZa druhé – pokud u nich najdete tlačítko Žádost o péči, vyplňte ji.\nZa třetí – poskytovatelé by se vám měli ozvat do dvaceti čtyř hodin.\nZa čtvrté – pro rychlejší vyřízení dokončete registraci na www.famicura.cz.');
   } else if (/nemocnic|hospic|umír|paliat|demenc|alzheim|senior|péč|pomoc/.test(t)) {
     const codes = /demenc|alzheim/.test(t) ? ['ID06', 'ID10'] : /hospic|umír|paliat/.test(t) ? ['ID01', 'ID03'] : ['ID03', 'ID15'];
-    const { forClient } = runTool('recommended-services', { services: codes });
+    const { forClient } = await runTool('recommended-services', { services: codes });
     session.lastRecommendation = forClient;
     emit('recommendation', forClient);
     await say('Na základě toho, co jste mi sdělil/a, doporučuji tyto služby:\n\n');

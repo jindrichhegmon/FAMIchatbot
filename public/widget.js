@@ -83,8 +83,18 @@
   .card ol{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:8px}
   .card li{display:flex;gap:10px;align-items:flex-start;padding:8px 10px;background:#f8fafc;border-radius:8px}
   .card li .n{flex:1;min-width:0}.card li .n b{display:block;font-size:13.5px}.card li .n small{display:block;color:#64748b;font-size:12px;margin-top:2px}
-  .card li a{flex:0 0 auto;background:var(--c);color:#fff;text-decoration:none;font-size:12.5px;padding:7px 10px;border-radius:8px;white-space:nowrap}
+  .card li>a{flex:0 0 auto;background:var(--c);color:#fff;text-decoration:none;font-size:12.5px;padding:7px 10px;border-radius:8px;white-space:nowrap}
   .card .foot{margin-top:8px;font-size:12px;color:#64748b}.card .foot a{color:var(--c)}
+  .card li{flex-wrap:wrap}.card li .n{flex:1 1 60%}
+  .prov{flex:1 1 100%;margin-top:6px;display:flex;flex-direction:column;gap:6px}
+  .prov .p{display:flex;gap:8px;align-items:center;background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:7px 9px}
+  .prov .p .pn{flex:1;min-width:0}.prov .p .pn b{display:block;font-size:13px;font-weight:600}
+  .prov .p .pn small{display:block;color:#64748b;font-size:11.5px;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .prov .p .pn small a{color:#475569;text-decoration:none}
+  .prov .p .bd{display:inline-block;font-size:10px;font-weight:600;padding:1px 6px;border-radius:999px;margin-left:5px;vertical-align:1px}
+  .bd.ok{background:#dcfce7;color:#166534}.bd.top{background:#fef3c7;color:#92400e}
+  .prov .p a.rq{flex:0 0 auto;background:var(--c);color:#fff;text-decoration:none;font-size:12px;padding:6px 9px;border-radius:8px;white-space:nowrap}
+  .prov .more{font-size:12px;color:#64748b;padding:2px 2px 0}.prov .none{font-size:12px;color:#64748b;font-style:italic}
   .inp{flex:0 0 auto;border-top:1px solid #e5e9f2;padding:10px;display:flex;gap:8px;align-items:flex-end;background:#fff}
   textarea{flex:1;resize:none;border:1px solid #cbd5e1;border-radius:12px;padding:10px 12px;font-size:14.5px;line-height:1.35;max-height:120px;outline:none;font-family:inherit}
   textarea:focus{border-color:var(--c);box-shadow:0 0 0 3px color-mix(in srgb,var(--c) 18%,transparent)}
@@ -190,9 +200,25 @@
     const d = document.createElement('div');
     d.className = 'card';
     const region = data.region ? `Okres: <b>${esc(data.region.name)}</b>` : 'Okres zatím není zadán – po jeho doplnění nabídku upřesním.';
+    const provHtml = (s) => {
+      if (!data.region || !Array.isArray(s.providers)) return '';
+      if (!s.providers.length) return '<div class="prov"><div class="none">V tomto okrese zatím není v databázi FamiCura žádný poskytovatel – zkuste sousední okres nebo vyhledávání na famicura.cz.</div></div>';
+      const rows = s.providers.map((p) => {
+        const badges = (p.doporuceny ? '<span class="bd top">Doporučený</span>' : '') + (p.overeny ? '<span class="bd ok">Ověřený</span>' : '');
+        const contact = [
+          p.mesto ? esc(p.mesto) : '',
+          p.telefon ? `<a href="tel:${esc(String(p.telefon).replace(/\s+/g, ''))}">${esc(p.telefon)}</a>` : '',
+          p.web ? `<a href="${esc(p.web)}" target="_blank" rel="noopener">web</a>` : '',
+        ].filter(Boolean).join(' · ');
+        const rq = p.requestUrl ? `<a class="rq" href="${esc(p.requestUrl)}" target="_blank" rel="noopener">Žádost o péči</a>` : '';
+        return `<div class="p"><div class="pn"><b>${esc(p.nazev)}${badges}</b><small>${contact || esc(p.typy || '')}</small></div>${rq}</div>`;
+      }).join('');
+      const more = s.providersTotal > s.providers.length ? `<div class="more">… a dalších ${s.providersTotal - s.providers.length} na <a href="https://www.famicura.cz" target="_blank" rel="noopener">famicura.cz</a></div>` : '';
+      return `<div class="prov">${rows}${more}</div>`;
+    };
     d.innerHTML = `<h4>Doporučené služby</h4><div class="rg">${region}</div><ol>${data.services
-      .map((s) => `<li><div class="n"><b>${esc(s.name)}</b><small>${esc(s.short || '')}</small></div>${data.region ? `<a href="${esc(s.url)}" target="_blank" rel="noopener">Najít poskytovatele</a>` : ''}</li>`)
-      .join('')}</ol><div class="foot">Poskytovatele vyberete na <a href="https://www.famicura.cz" target="_blank" rel="noopener">www.famicura.cz</a>.</div>`;
+      .map((s) => `<li><div class="n"><b>${esc(s.name)}</b><small>${esc(s.short || '')}</small></div>${data.region && !Array.isArray(s.providers) ? `<a href="${esc(s.url)}" target="_blank" rel="noopener">Najít poskytovatele</a>` : ''}${provHtml(s)}</li>`)
+      .join('')}</ol><div class="foot">${data.region && data.providersLoaded ? 'Poskytovatelé z databáze FamiCura. Kliknutím na Žádost o péči je oslovíte přímo.' : 'Poskytovatele vyberete na <a href="https://www.famicura.cz" target="_blank" rel="noopener">www.famicura.cz</a>.'}</div>`;
     msgs.appendChild(d);
     scroll();
     return d;

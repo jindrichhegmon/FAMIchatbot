@@ -12,9 +12,9 @@ test('tool schema má všechny služby a okresy', () => {
   assert.ok(okresy.length >= 77);
 });
 
-test('handleRecommendedServices: validace, dedup, URL, region', () => {
+test('handleRecommendedServices: validace, dedup, URL, region', async () => {
   const zlin = okresy.find((o) => o.name === 'Zlín');
-  const { forClient, forModel } = handleRecommendedServices({ services: ['ID12', 'ID12', 'XX'], region: { id: zlin.id, name: 'Zlín' } });
+  const { forClient, forModel } = await handleRecommendedServices({ services: ['ID12', 'ID12', 'XX'], region: { id: zlin.id, name: 'Zlín' } });
   assert.equal(forClient.services.length, 1);
   assert.equal(forClient.services[0].code, 'ID12');
   assert.ok(forClient.services[0].url.includes(zlin.id));
@@ -22,10 +22,10 @@ test('handleRecommendedServices: validace, dedup, URL, region', () => {
   assert.equal(forModel.region, 'Zlín');
 });
 
-test('handleRecommendedServices: region podle názvu, bez regionu', () => {
-  const a = handleRecommendedServices({ services: ['ID01'], region: { id: 'nesmysl', name: 'Brno-město' } });
+test('handleRecommendedServices: region podle názvu, bez regionu', async () => {
+  const a = await handleRecommendedServices({ services: ['ID01'], region: { id: 'nesmysl', name: 'Brno-město' } });
   assert.equal(a.forClient.region.name, 'Brno-město');
-  const b = handleRecommendedServices({ services: ['ID01'] });
+  const b = await handleRecommendedServices({ services: ['ID01'] });
   assert.equal(b.forClient.region, null);
   assert.match(b.forModel.note, /okres/i);
 });

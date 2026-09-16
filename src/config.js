@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const MODULE_DIR = path.dirname(fileURLToPath(import.meta.url));
 
 /**
  * Kořen projektu (kde leží config/ a prompt/). Lokálně je to ../ od src/, v Netlify Functions
@@ -12,15 +12,15 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 function findRoot() {
   const candidates = [
     process.env.FAMI_ROOT,
-    path.resolve(__dirname, '..'),
-    path.resolve(__dirname, '../..'),
+    path.resolve(MODULE_DIR, '..'),
+    path.resolve(MODULE_DIR, '../..'),
     process.cwd(),
     '/var/task',
   ].filter(Boolean);
   for (const c of candidates) {
     if (fs.existsSync(path.join(c, 'config', 'services.json'))) return c;
   }
-  return path.resolve(__dirname, '..');
+  return path.resolve(MODULE_DIR, '..');
 }
 export const ROOT = findRoot();
 

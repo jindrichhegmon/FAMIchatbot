@@ -1,9 +1,0 @@
-# Varianta: pouze statický frontend (index.html + widget.js) na Netlify, API na VPS.
-# Zkopírujte do kořene jako netlify.toml a nastavte data-api-base ve public/index.html na URL API.
-[build]
-  publish = "public"
-[[headers]]
-  for = "/widget.js"
-  [headers.values]
-    Cache-Control = "public, max-age=300"
-    Access-Control-Allow-Origin = "*"

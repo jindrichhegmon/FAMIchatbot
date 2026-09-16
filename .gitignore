@@ -3,3 +3,4 @@ logs/
 .env
 .DS_Store
 .netlify/
+_to_delete/

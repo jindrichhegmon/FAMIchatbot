@@ -67,7 +67,8 @@ let storePromise = null;
 export function getSessionStore() {
   if (!storePromise) {
     storePromise = (async () => {
-      const wantBlobs = config.sessionStore === 'blobs' || (config.sessionStore === 'auto' && process.env.NETLIFY === 'true');
+      const onNetlify = typeof globalThis.Netlify !== 'undefined' || process.env.NETLIFY === 'true' || Boolean(process.env.NETLIFY_BLOBS_CONTEXT);
+      const wantBlobs = config.sessionStore === 'blobs' || (config.sessionStore === 'auto' && onNetlify);
       if (wantBlobs) {
         try { return await blobsStore(); } catch (e) { console.warn('Netlify Blobs nedostupné, používám paměť:', e.message); }
       }
